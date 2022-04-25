@@ -1,0 +1,14 @@
+{
+  "name": "handlednings-experiment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel *.html --port 1337"
+  },
+  "author": "Lyret",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^2.4.1"
+  }
+}
