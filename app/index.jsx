@@ -16,25 +16,12 @@ function HelloWorldComponent() {
 }
 
 // ------------------------------------------------------------------
-class FilmDetails extends React.Component {
+function FilmDetails() {
+	const params = useParams();
 	
-	async componentDidMount() {
-		const filmId = this.props.filmId
-		const film = await myBackendFunctionThatGetsAMovie(filmId);
-		this.setState({ film });
-	}
-	
-	render() {
-		return (
-			<>
-			<h1>Detaljer om film med id: {this.props.filmId}</h1>
-			<Link to="/">Gå tillbaka</Link>
-			</>
-		);
-	}
-}
-export function FilmDetailsRoute() {
-	const params = useParams();	
+	useEffect(() => {
+		console.log("GOT NEW PARAMS");
+	}, [params])
 	
 	return (
 		<>
@@ -43,7 +30,6 @@ export function FilmDetailsRoute() {
 		</>
 	);
 }
-// ------------------------------------------------------------
 
 class App extends React.Component {
 	render() {
@@ -52,7 +38,7 @@ class App extends React.Component {
 				<h1>Min sida: seed {Math.random()}</h1>
 				<Routes>
 					<Route path="/" element={<HelloWorldComponent/>} />
-					<Route path="/details/:filmId" element={<FilmDetailsRoute/>} />
+					<Route path="/details/:filmId" element={<FilmDetails/>} />
 				</Routes>
 			</Router>
 		);
