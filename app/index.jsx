@@ -1,124 +1,60 @@
 import React from 'react';
+import { HashRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 
+function HelloWorldComponent() {
+	return (
+		<>
+		<h1>Movies:</h1>
+		<ul>
+		<li><Link to="/details/1">Die Hard</Link></li>
+		<li><Link to="/details/2">Drive my car</Link></li>
+		<li><Link to="/details/3">Star Trek</Link></li>
+		</ul>
+		</>
+	);
+}
 
-
-class App extends React.Component {
-	constructor(props) {
-		super(props)
-		const storedState = localStorage.getItem("state");
-		
-		if (storedState) {
-			this.state = JSON.parse(storedState);
-		}
-		else {
-			this.state = { value: 0 }
-		}
-	}
+// ------------------------------------------------------------------
+class FilmDetails extends React.Component {
 	
-	onAddPresses = (placement, activated) => {
-		if (activated) {
-			this.updateState({
-				value: this.state.value + placement
-			})
-		}
-		else {
-			this.updateState({
-				value: this.state.value - placement
-			})
-		}
-	}
-	
-	cleanState = () => {
-		this.setState({ value: 0 }, () => localStorage.removeItem("state"));
-	}
-	
-	updateState = (newState) => {
-		this.setState(newState, () => localStorage.setItem("state", JSON.stringify(this.state)));
-	}
-	
-	renderFacts() {
-		if (this.state.value >= 15) {
-			return (<Fact>15 är det största talet med 4:a bits</Fact>);
-		}
-		if (this.state.value >= 1) {
-			return (<Fact>1 är den första siffran</Fact>);
-		}
-		return null;
+	async componentDidMount() {
+		const filmId = this.props.filmId
+		const film = await myBackendFunctionThatGetsAMovie(filmId);
+		this.setState({ film });
 	}
 	
 	render() {
-		const myArray = [
-			{ name: "Viktor", id: "1" },
-			{ name: "Isac", id: "2" },
-			{ name: "Thomas", id: "3" }
-		]
-		
 		return (
 			<>
-				<h1>BYTE-ish</h1>
-				<h2>Value: {this.state.value}</h2>
-				<button onClick={this.cleanState}>Återställ</button>
-				<BitButton placement={1} onClick={this.onAddPresses}/>
-				<BitButton placement={2} onClick={this.onAddPresses}/>
-				<BitButton placement={4} onClick={this.onAddPresses}/>
-				<BitButton placement={8} onClick={this.onAddPresses}/>
-				<BitButton placement={16} onClick={this.onAddPresses}/>
-				<BitButton placement={32} onClick={this.onAddPresses}/>
-				<BitButton placement={64} onClick={this.onAddPresses}/>
-				<BitButton placement={128} onClick={this.onAddPresses}/>
-				<hr/>
-				{myArray.map(person => (
-					<Fact key={person.id}>{person.name} är i Zoom</Fact>
-				))}
-				<hr/>
-				<h2>Fakta om {this.state.value}:</h2>
-				{this.renderFacts()}
+			<h1>Detaljer om film med id: {this.props.filmId}</h1>
+			<Link to="/">Gå tillbaka</Link>
 			</>
 		);
 	}
 }
-
-function Fact(props) {
+export function FilmDetailsRoute() {
+	const params = useParams();	
+	
 	return (
 		<>
-		<b>{props.children}</b>
-		<br/>
+		<FilmDetails filmId={params.filmId} />
+			<Link to="/details/2">Gå till film 2</Link>
 		</>
-	)
-} 
+	);
+}
+// ------------------------------------------------------------
 
-class BitButton extends React.Component {
-	state = { activated: false };
-	
-	constructor(props) {
-		super(props)
-		console.log("skapade placement "+props.placement);
-	}
-	
-	componentDidMount() {
-		console.log("har mountas");
-	}
-	
-	componentDidUpdate() {
-		console.log("har uppdaterat");
-	}
-	
-	onClick() {
-		this.setState({
-			activated: !this.state.activated
-		}, () => {
-			this.props.onClick(this.props.placement, this.state.activated);
-		});
-	}
-	
+class App extends React.Component {
 	render() {
 		return (
-			<button
-				onClick={this.onClick.bind(this)}
-			>
-				Bit {this.props.placement}: {(this.state.activated) ? <span>På</span> : <span>Av</span>}
-			</button>
+			<Router basename="" >
+				<h1>Min sida: seed {Math.random()}</h1>
+				<Routes>
+					<Route path="/" element={<HelloWorldComponent/>} />
+					<Route path="/details/:filmId" element={<FilmDetailsRoute/>} />
+				</Routes>
+			</Router>
 		);
 	}
 }
