@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 
-function HelloWorldComponent() {
+function HelloWorldComponent(props) {
+	const [loading, setLoading] = useState(true);
+	const [parsing, setParing] = useState(false);
+	
+	useEffect(() => {
+		console.log("component DID MOUNT");
+		return () => {
+			console.log("component DID UNMOUNT");
+		}
+	}, []);
+	
+	useEffect(() => {
+			if (loading) {
+			console.log("component is loading");
+			} else {
+				console.log("component is NOT loading");
+			}
+		}, [loading]);
+	
 	return (
 		<>
-		<h1>Movies:</h1>
+		<h1>Hello World, Loading: {String(loading)}, Parsing: {String(parsing)}</h1>
+		<button onClick={() => setLoading(!loading)}>Change loading</button>
+		<button onClick={() => setParing(!parsing)}>Change parsing</button>
 		<ul>
 		<li><Link to="/details/1">Die Hard</Link></li>
 		<li><Link to="/details/2">Drive my car</Link></li>
@@ -16,7 +36,24 @@ function HelloWorldComponent() {
 }
 
 // ------------------------------------------------------------------
-function FilmDetails() {
+class FilmDetails extends React.Component {
+	
+	async componentDidMount() {
+		const filmId = this.props.filmId
+		const film = await myBackendFunctionThatGetsAMovie(filmId);
+		this.setState({ film });
+	}
+	
+	render() {
+		return (
+			<>
+			<h1>Detaljer om film med id: {this.props.filmId}</h1>
+			<Link to="/">Gå tillbaka</Link>
+			</>
+		);
+	}
+}
+export function FilmDetailsRoute() {
 	const params = useParams();
 	
 	useEffect(() => {
@@ -30,6 +67,7 @@ function FilmDetails() {
 		</>
 	);
 }
+// ------------------------------------------------------------
 
 class App extends React.Component {
 	render() {
@@ -38,7 +76,7 @@ class App extends React.Component {
 				<h1>Min sida: seed {Math.random()}</h1>
 				<Routes>
 					<Route path="/" element={<HelloWorldComponent/>} />
-					<Route path="/details/:filmId" element={<FilmDetails/>} />
+					<Route path="/details/:filmId" element={<FilmDetailsRoute/>} />
 				</Routes>
 			</Router>
 		);
