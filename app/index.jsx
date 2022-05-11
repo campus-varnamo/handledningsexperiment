@@ -2,9 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 
-function HelloWorldComponent(props) {
+// LocalizedText.jsx ------------------------------------------------------------------
+
+function Text(props) {
+	const lang = props.lang;
+	return (
+		<span>{props[lang]}</span>
+	)
+}
+
+// MainPage.jsx ------------------------------------------------------------------
+
+function MainPage(props) {
 	const [loading, setLoading] = useState(true);
-	const [parsing, setParing] = useState(false);
+	const lang = props.lang;
+	const setLang = props.setLang;
+	
 	
 	useEffect(() => {
 		console.log("component DID MOUNT");
@@ -23,64 +36,52 @@ function HelloWorldComponent(props) {
 	
 	return (
 		<>
-		<h1>Hello World, Loading: {String(loading)}, Parsing: {String(parsing)}</h1>
-		<button onClick={() => setLoading(!loading)}>Change loading</button>
-		<button onClick={() => setParing(!parsing)}>Change parsing</button>
-		<ul>
-		<li><Link to="/details/1">Die Hard</Link></li>
-		<li><Link to="/details/2">Drive my car</Link></li>
-		<li><Link to="/details/3">Star Trek</Link></li>
-		</ul>
+			<h1><Text lang={lang} en="Hello World, Loading:" sv="Hej värden, laddar: "/>{String(loading)}, <Text lang={lang} en="Language: " sv="Språkval: "/>{lang}</h1>	
+			<button onClick={() => setLoading(!loading)}>Change loading</button>
+			<button onClick={() => setLang("sv")}><Text lang={lang} sv="Ändra språkval" en="Change langugage"/></button>
+			<ul>
+				<li><Link to="/details/1">Die Hard</Link></li>
+				<li><Link to="/details/2">Drive my car</Link></li>
+				<li><Link to="/details/3">Star Trek</Link></li>
+			</ul>
 		</>
 	);
 }
 
-// ------------------------------------------------------------------
-class FilmDetails extends React.Component {
-	
-	async componentDidMount() {
-		const filmId = this.props.filmId
-		const film = await myBackendFunctionThatGetsAMovie(filmId);
-		this.setState({ film });
-	}
-	
-	render() {
-		return (
-			<>
-			<h1>Detaljer om film med id: {this.props.filmId}</h1>
-			<Link to="/">Gå tillbaka</Link>
-			</>
-		);
-	}
-}
-export function FilmDetailsRoute() {
+// FilmDetailsPage.jsx ------------------------------------------------------------------
+
+export function FilmDetailsPage(props) {
 	const params = useParams();
+	const lang = props.lang;
 	
 	useEffect(() => {
 		console.log("GOT NEW PARAMS");
+		// const filmId = this.props.filmId
+		// const film = await myBackendFunctionThatGetsAMovie(filmId);
 	}, [params])
 	
 	return (
 		<>
-		<FilmDetails filmId={params.filmId} />
-			<Link to="/details/2">Gå till film 2</Link>
+			<h1><Text lang={lang} sv="Detaljer om film med id:" en="Details for the movie with id:"/> {params.filmId}</h1>
+			<Link to="/"><Text>Gå tillbaka</Text></Link>
 		</>
 	);
 }
-// ------------------------------------------------------------
 
-class App extends React.Component {
-	render() {
-		return (
-			<Router basename="" >
-				<h1>Min sida: seed {Math.random()}</h1>
-				<Routes>
-					<Route path="/" element={<HelloWorldComponent/>} />
-					<Route path="/details/:filmId" element={<FilmDetailsRoute/>} />
-				</Routes>
-			</Router>
-		);
-	}
+// App.jsx ------------------------------------------------------------
+
+function App(props) {
+	const [lang, setLang] = useState("en");
+	
+	return (
+		<Router basename="" >
+			<h1>Min sida: seed {Math.random()}</h1>
+			<Routes>
+				<Route path="/" element={<MainPage lang={lang} setLang={setLang} />} />
+				<Route path="/details/:filmId" element={<FilmDetailsPage lang={lang}/>} />
+			</Routes>
+		</Router>
+	);
 }
 
 
