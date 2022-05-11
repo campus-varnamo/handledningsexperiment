@@ -1,22 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, createContext } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 
-// LocalizedText.jsx ------------------------------------------------------------------
+// LanguageContext.js ------------------------------------------------------------------
 
-function Text(props) {
-	const lang = props.lang;
+export const LanguageContext = createContext({ lang: "unknown", changeLang: undefined });
+
+// Text.jsx ------------------------------------------------------------------
+
+export function Text(props) {
+	const langContext = useContext(LanguageContext);
+	
+	if (langContext.lang == "sv") {
+		return (
+			<span>{props.sv}</span>
+		)
+	}
+	else if (langContext.lang == "en") {
+		return (
+			<span>{props.en}</span>
+		)
+	}
 	return (
-		<span>{props[lang]}</span>
+		<span>OKÄNT SPRÅK</span>
+	)
+}
+
+// LanguageProvider.jsx ------------------------------------------------------------
+
+export function LanguageProvider(props) {
+	const [lang, setLang] = useState("en");
+	
+	const changeLang = () => {
+		if (lang == "sv") {
+			setLang("en");
+		} else {
+			setLang("sv");
+		}
+	}
+	
+	return (
+		<LanguageContext.Provider value={{ lang: lang, changeLang: changeLang }}>
+			{props.children}
+		</LanguageContext.Provider>
+	)
+}
+
+// LoremIpsum.jsx ------------------------------------------------------------------
+
+export function LoremIpsum(props) {
+	return (
+		<p><Text
+			en="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+			sv="Lorem Ipsum är en utfyllnadstext från tryck- och förlagsindustrin. Lorem ipsum har varit standard ända sedan 1500-talet, när en okänd boksättare tog att antal bokstäver och blandade dem för att göra ett provexemplar av en bok. Lorem ipsum har inte bara överlevt fem århundraden, utan även övergången till elektronisk typografi utan större förändringar. Det blev allmänt känt på 1960-talet i samband med lanseringen av Letraset-ark med avsnitt av Lorem Ipsum, och senare med mjukvaror som Aldus PageMaker."
+		/></p>
 	)
 }
 
 // MainPage.jsx ------------------------------------------------------------------
 
-function MainPage(props) {
+export function MainPage(props) {
 	const [loading, setLoading] = useState(true);
-	const lang = props.lang;
-	const setLang = props.setLang;
+	const langContext = useContext(LanguageContext);
 	
 	
 	useEffect(() => {
@@ -36,9 +81,10 @@ function MainPage(props) {
 	
 	return (
 		<>
-			<h1><Text lang={lang} en="Hello World, Loading:" sv="Hej värden, laddar: "/>{String(loading)}, <Text lang={lang} en="Language: " sv="Språkval: "/>{lang}</h1>	
+			<h1><Text en="Hello World, Loading:" sv="Hej värden, laddar: "/>{String(loading)}, <Text en="Language: " sv="Språkval: "/>{langContext.lang}</h1>
+			<LoremIpsum/>
 			<button onClick={() => setLoading(!loading)}>Change loading</button>
-			<button onClick={() => setLang("sv")}><Text lang={lang} sv="Ändra språkval" en="Change langugage"/></button>
+			<button onClick={() => langContext.changeLang()}><Text lang={langContext.lang} sv="Ändra språkval" en="Change langugage"/></button>
 			<ul>
 				<li><Link to="/details/1">Die Hard</Link></li>
 				<li><Link to="/details/2">Drive my car</Link></li>
@@ -52,7 +98,6 @@ function MainPage(props) {
 
 export function FilmDetailsPage(props) {
 	const params = useParams();
-	const lang = props.lang;
 	
 	useEffect(() => {
 		console.log("GOT NEW PARAMS");
@@ -62,7 +107,7 @@ export function FilmDetailsPage(props) {
 	
 	return (
 		<>
-			<h1><Text lang={lang} sv="Detaljer om film med id:" en="Details for the movie with id:"/> {params.filmId}</h1>
+			<h1><Text sv="Detaljer om film med id:" en="Details for the movie with id:"/> {params.filmId}</h1>
 			<Link to="/"><Text>Gå tillbaka</Text></Link>
 		</>
 	);
@@ -70,17 +115,17 @@ export function FilmDetailsPage(props) {
 
 // App.jsx ------------------------------------------------------------
 
-function App(props) {
-	const [lang, setLang] = useState("en");
-	
+export function App(props) {
 	return (
-		<Router basename="" >
-			<h1>Min sida: seed {Math.random()}</h1>
-			<Routes>
-				<Route path="/" element={<MainPage lang={lang} setLang={setLang} />} />
-				<Route path="/details/:filmId" element={<FilmDetailsPage lang={lang}/>} />
-			</Routes>
-		</Router>
+		<LanguageProvider>
+			<Router basename="" >
+				<h1><Text sv="Omrenderingsnummer:" en="Re-rendering-number"/>: {Math.random()}</h1>
+					<Routes>
+						<Route path="/" element={<MainPage/>} />
+						<Route path="/details/:filmId" element={<FilmDetailsPage />} />
+					</Routes>
+			</Router>
+		</LanguageProvider>
 	);
 }
 
