@@ -2,6 +2,54 @@ import React, { useState, useEffect, useContext, createContext } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 
+// ErrorView.js ------------------------------------------------------------------
+
+export class ErrorView extends React.Component {
+	
+	constructor(props) {
+		super(props);
+		this.state = {
+			errCode: null,
+			errMess: null
+		}
+	}
+	
+	componentDidCatch(err) {
+		if (err.code && err.message) {			
+			this.setState({ errCode: err.code, errMess: err.message });
+		}
+		else {
+			this.setState({ errCode: "unknown", errMess: err.toString()});
+		}
+	}
+	
+	render() {
+		/* if (this.state.errCode == "lang") {
+			return (
+				<>
+					<p>{this.state.errMess}</p>
+					<button onClick={() => alert("ändra språk")}>Reset language</button>
+				</>
+			)
+		} */
+		if (this.state.errCode) {
+			return (
+				<>
+					<p>"Unrecoverable error occured"</p>
+					<button onClick={() => window.location.reload()}>Reload page</button>
+				</>
+			)
+		}
+		
+		return (
+			<>
+				{this.props.children}
+			</>
+		);	
+	}
+}
+
+
 // LanguageContext.js ------------------------------------------------------------------
 
 export const LanguageContext = createContext({ lang: "unknown", changeLang: undefined });
@@ -21,9 +69,7 @@ export function Text(props) {
 			<span>{props.en}</span>
 		)
 	}
-	return (
-		<span>OKÄNT SPRÅK</span>
-	)
+	throw {code: "lang", message: "Unknown language selected"};
 }
 
 // LanguageProvider.jsx ------------------------------------------------------------
@@ -33,12 +79,15 @@ export function LanguageProvider(props) {
 	
 	const changeLang = () => {
 		if (lang == "sv") {
-			setLang("en");
-		} else {
+			setLang("de");
+		}
+		else if (lang == "en") {
+			setLang("sv");
+		}
+		else {
 			setLang("sv");
 		}
 	}
-	
 	return (
 		<LanguageContext.Provider value={{ lang: lang, changeLang: changeLang }}>
 			{props.children}
@@ -118,13 +167,15 @@ export function FilmDetailsPage(props) {
 export function App(props) {
 	return (
 		<LanguageProvider>
-			<Router basename="" >
-				<h1><Text sv="Omrenderingsnummer:" en="Re-rendering-number"/>: {Math.random()}</h1>
-					<Routes>
-						<Route path="/" element={<MainPage/>} />
-						<Route path="/details/:filmId" element={<FilmDetailsPage />} />
-					</Routes>
-			</Router>
+			<ErrorView>
+				<Router basename="" >
+					<h1><Text sv="Omrenderingsnummer:" en="Re-rendering-number"/>: {Math.random()}</h1>
+						<Routes>
+							<Route path="/" element={<MainPage/>} />
+							<Route path="/details/:filmId" element={<FilmDetailsPage />} />
+						</Routes>
+				</Router>
+			</ErrorView>
 		</LanguageProvider>
 	);
 }
@@ -132,4 +183,4 @@ export function App(props) {
 
 
 const root = createRoot(document.getElementById("root"));
-root.render(<App/>);
+root.render(<App myProps="yes" />);
