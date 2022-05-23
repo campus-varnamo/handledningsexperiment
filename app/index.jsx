@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
+import { getMovieDetails, getListOfMovies } from './api'
 
 // ErrorView.js ------------------------------------------------------------------
 
@@ -106,6 +107,41 @@ export function LoremIpsum(props) {
 	)
 }
 
+// ListOfMovies.jsx ------------------------------------------------------------------
+
+export function MovieList(props) {
+	const [movieList, setMovieList] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [err, setErr] = useState([]);
+	
+	useEffect(() => {
+		(async () => {
+			const [data, err] = await getListOfMovies();
+			setMovieList(data);
+			setErr(err);
+			setLoading(false);
+		})();
+	}, [loading]);
+	
+	if (err) {
+		return (
+			<p>Unable to load movies from db</p>
+		)
+	}
+	if (loading) {
+		return (
+			<p>Loading movies...</p>
+		)
+	}
+	return (
+		<ul>
+			{movieList.map(movie => (
+				<li><Link to={`/details/${movie.id}`}>{movie.name}</Link></li>
+			))}
+		</ul>
+	);
+}
+
 // MainPage.jsx ------------------------------------------------------------------
 
 export function MainPage(props) {
@@ -134,11 +170,7 @@ export function MainPage(props) {
 			<LoremIpsum/>
 			<button onClick={() => setLoading(!loading)}>Change loading</button>
 			<button onClick={() => langContext.changeLang()}><Text lang={langContext.lang} sv="Ändra språkval" en="Change langugage"/></button>
-			<ul>
-				<li><Link to="/details/1">Die Hard</Link></li>
-				<li><Link to="/details/2">Drive my car</Link></li>
-				<li><Link to="/details/3">Star Trek</Link></li>
-			</ul>
+			<MovieList/>
 		</>
 	);
 }
